@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="container my-5">
+  <h3>Search Results</h3>
+  <div class="row">
+    {% for ad in ads %}
+      <!-- Your ad card design -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        <div class="card mb-4">
+          <img src="{{ ad.image.url }}" class="card-img-top" alt="{{ ad.title }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ ad.title }}</h5>
+            <p class="card-text">${{ ad.price }} | {{ ad.location }}</p>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>No results found.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

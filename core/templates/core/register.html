@@ -1,0 +1,78 @@
+{% extends 'core/base.html' %}
+{% block title %}Register - Veroshe{% endblock %}
+{% block content %}
+
+<!-- Page Banner -->
+<section class="bg-dark text-white text-center py-4">
+  <div class="container">
+    <h1>Sign Up</h1>
+  </div>
+</section>
+
+<!-- Sign-up Content -->
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center align-items-center">
+
+      <!-- Left Column: Features -->
+      <div class="col-md-5 mb-4 mb-md-0">
+        <div class="mb-4">
+          <h5><i class="bi bi-bullseye me-2 text-primary"></i>Manage Your Ads</h5>
+          <p class="text-muted">Easily track and edit your ads. Convenient advertising at your fingertips.</p>
+        </div>
+        <div class="mb-4">
+          <h5><i class="bi bi-chat-dots me-2 text-primary"></i>Chat & Messaging Anytime</h5>
+          <p class="text-muted">Connect instantly with potential buyers or sellers using our chat system.</p>
+        </div>
+        <div>
+          <h5><i class="bi bi-patch-check me-2 text-primary"></i>245,345 Verified Users</h5>
+          <p class="text-muted">Join our large network of verified users and trusted sellers worldwide.</p>
+        </div>
+      </div>
+
+      <!-- Right Column: Sign-up Box -->
+      <div class="col-md-5">
+        <div class="card shadow p-4">
+          <h3 class="text-center mb-3">Sign Up</h3>
+
+          <div class="d-grid gap-2 mb-3">
+            <a href="#" class="btn btn-outline-danger"><i class="bi bi-google me-2"></i>Sign up with Google</a>
+            <a href="#" class="btn btn-outline-primary"><i class="bi bi-facebook me-2"></i>Sign up with Facebook</a>
+          </div>
+
+          <div class="text-center my-2 text-muted">- or sign up with email -</div>
+
+          {% if error %}
+          <div class="alert alert-danger">{{ error }}</div>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <input type="text" name="username" class="form-control" placeholder="Full Name" required>
+            </div>
+            <div class="mb-3">
+              <input type="email" name="email" class="form-control" placeholder="Your email address" required>
+            </div>
+            <div class="mb-3">
+              <input type="password" name="password1" class="form-control" placeholder="Password" required>
+            </div>
+            <div class="mb-3">
+              <input type="password" name="password2" class="form-control" placeholder="Confirm Password" required>
+            </div>
+            <div class="mb-3 small text-muted">
+              By signing up, you agree to our <a href="#" class="text-decoration-none">Privacy Policy</a> and <a href="#" class="text-decoration-none">Terms & Conditions</a>.
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+          </form>
+
+          <p class="mt-4 text-center small">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+

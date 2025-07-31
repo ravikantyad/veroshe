@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Select a Category to Post Your Ad</h2>
+    <div class="row">
+        {% for cat in categories %}
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'post_ad' cat.slug %}" class="text-decoration-none text-dark">
+                <div class="border rounded p-3 shadow-sm d-flex align-items-center">
+                    <i class="bi bi-{{ cat.icon }} fs-3 me-3 text-primary"></i>
+                    <span class="fs-5">{{ cat.name }}</span>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

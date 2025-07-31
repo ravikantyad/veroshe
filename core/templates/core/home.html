@@ -1,0 +1,97 @@
+{% extends 'core/base.html' %}
+{% load custom_filters %}
+{% load static %}
+
+
+{% block content %}
+<div id="searchOverlay" class="search-overlay">
+  <div class="container p-4 bg-light rounded shadow">
+    <div class="text-end">
+      <button class="btn-close" onclick="closeSearch()"></button>
+    </div>
+
+    <h4 class="mb-4">Find the Right Car Part</h4>
+
+    <form method="get" action="{% url 'search_results' %}">
+      <div class="mb-3">
+        <input type="text" name="q" class="form-control" placeholder="Search parts..." />
+      </div>
+      <div class="mb-3">
+        <input type="text" name="location" class="form-control" placeholder="Enter location" />
+      </div>
+      <div class="mb-3">
+        <select name="category" class="selectpicker form-select w-100"  data-live-search="true">
+          <option value="">Select Category</option>
+          {% for cat in categories %}
+          <option value="{{ cat.name }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <select class = "selectpicker form-select w-100" data-live-search="true" name="year">
+          <option value="">Select Year</option>
+          {% for y in years %}
+          <option value="{{ y }}">{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="text-end">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- 🔲 Search Bar -->
+<!-- 🔲 Improved Search Bar -->
+<div class="container mt-3 mb-2">
+  <div class=" bg-dark border input-group shadow-sm rounded-pill search-bar" onclick="openSearch()" style="cursor: pointer;">
+    <span class="input-group-text bg-white border-0 ps-4">
+      <i class="bi bi-search text-muted fs-5"></i>
+    </span>
+    <input type="text" class="form-control form-control-md  border-0 bg-white rounded-end-pill"  placeholder="Search car parts, accessories..." readonly>
+  </div>
+</div>
+
+
+  <!-- Ads Grid Section -->
+<div class="container mb-5">
+  <h4 class="mb-4 fw-semibold">Latest Auto Parts ({{ ads.count }})</h4>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for ad in ads %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          {% if ad.image %}
+            <img src="{{ ad.image.url }}" class="card-img-top" alt="{{ ad.title }}" style="height: 180px; object-fit: cover;">
+          {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+              <span class="text-muted">No image</span>
+            </div>
+          {% endif %}
+
+          <div class="card-body">
+            <h6 class="card-title mb-1 text-truncate">{{ ad.title }}</h6>
+            <p class="small text-muted mb-1">{{ ad.vehicle_name }} {{ ad.model }} {{ ad.year }}</p>
+            <p class="fw-bold text-primary">${{ ad.price }}</p>
+            <p class="small mb-1"><i class="bi bi-geo-alt"></i> {{ ad.location }}</p>
+            <p class="small text-muted mb-0">
+              <i class="bi bi-clock"></i> {{ ad.created_at|timesince }} ago<br>
+              <i class="bi bi-person"></i> {{ ad.seller.username }}
+            </p>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>No ads available yet.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Search Overlay -->
+
+
+
+
+
+{% endblock %}

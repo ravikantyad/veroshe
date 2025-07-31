@@ -1,0 +1,17 @@
+<div class="row">
+  {% for ad in ads %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <img src="{{ ad.image.url }}" class="card-img-top" alt="{{ ad.title }}" style="height: 200px; object-fit: cover;">
+        <div class="card-body">
+          <h5 class="card-title">{{ ad.title }}</h5>
+          <p class="mb-1 text-muted">{{ ad.brand }} {{ ad.model }} - {{ ad.year }}</p>
+          <p class="fw-bold">${{ ad.price }}</p>
+          <p class="text-muted small">{{ ad.location }}</p>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-muted">No ads found for this filter.</p>
+  {% endfor %}
+</div>

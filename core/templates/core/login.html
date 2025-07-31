@@ -1,0 +1,75 @@
+{% extends 'core/base.html' %}
+{% block title %}Login - Veroshe{% endblock %}
+{% block content %}
+
+<!-- Page Banner -->
+<section class="bg-dark text-white text-center py-4">
+  <div class="container">
+    <h1>Sign In</h1>
+  </div>
+</section>
+
+<!-- Sign-in Content -->
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center align-items-center">
+
+      <!-- Left Column: Features -->
+      <div class="col-md-5 mb-4 mb-md-0">
+        <div class="mb-4">
+          <h5><i class="bi bi-bullseye me-2 text-primary"></i>Manage Your Ads</h5>
+          <p class="text-muted">Easily track and edit your ads. Convenient advertising at your fingertips.</p>
+        </div>
+        <div class="mb-4">
+          <h5><i class="bi bi-chat-dots me-2 text-primary"></i>Chat with Anyone, Anytime</h5>
+          <p class="text-muted">Get in touch with potential buyers or sellers instantly via our chat.</p>
+        </div>
+        <div>
+          <h5><i class="bi bi-patch-check me-2 text-primary"></i>245,345+ Verified Users</h5>
+          <p class="text-muted">Join thousands of trusted buyers and sellers in our community.</p>
+        </div>
+      </div>
+
+      <!-- Right Column: Login Box -->
+      <div class="col-md-5">
+        <div class="card shadow p-4">
+          <h3 class="text-center mb-3">Sign In</h3>
+
+          <div class="d-grid gap-2 mb-3">
+            <a href="#" class="btn btn-outline-danger"><i class="bi bi-google me-2"></i>Sign in with Google</a>
+            <a href="#" class="btn btn-outline-primary"><i class="bi bi-facebook me-2"></i>Sign in with Facebook</a>
+          </div>
+
+          <div class="text-center my-2 text-muted">- or sign in with email -</div>
+
+          {% if error %}
+          <div class="alert alert-danger">{{ error }}</div>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <input type="text" name="username" class="form-control" placeholder="Username or Email" required>
+            </div>
+            <div class="mb-3">
+              <input type="password" name="password" class="form-control" placeholder="Password" required>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe">
+                <label class="form-check-label small" for="rememberMe">Remember me</label>
+              </div>
+              <a href="{% url 'password_reset' %}" class="small">Forgot password?</a>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Sign in</button>
+          </form>
+
+          <p class="mt-4 text-center small">Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
