@@ -30,15 +30,15 @@
         </select>
       </div>
       <div class="mb-3">
-        <input type="text" name="location" class="form-control" placeholder="Enter location" />
-      </div>
-      <div class="mb-3">
         <select name="submodel" class="form-select selectpicker" data-live-search="true">
           <option value="">Select Submodel</option>
           {% for sub in submodels %}
             <option value="{{ sub }}">{{ sub }}</option>
           {% endfor %}
         </select>
+      </div>
+      <div class="mb-3">
+        <input type="text" name="location" class="form-control" placeholder="Enter location" />
       </div>
       <div class="mb-3">
         <select name="category" class="selectpicker form-select w-100"  data-live-search="true">
