@@ -7,7 +7,7 @@ class AdForm(forms.ModelForm):
     class Meta:
         model = Ad
         fields = [
-            'title', 'vehicle_name', 'model', 'sub_model', 'year',
+            'title', 'make', 'model', 'sub_model', 'year',
             'fuel_type', 'transmission', 'price', 'location',
             'mobile_number', 'description', 'image'
         ]

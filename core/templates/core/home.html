@@ -14,10 +14,31 @@
 
     <form method="get" action="{% url 'search_results' %}">
       <div class="mb-3">
-        <input type="text" name="q" class="form-control" placeholder="Search parts..." />
+        <select name="make" class="form-select selectpicker" data-live-search="true">
+          <option value="">Select Make</option>
+          {% for make in makes %}
+            <option value="{{ make }}">{{ make }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <select name="model" class="form-select selectpicker" data-live-search="true">
+          <option value="">Select Model</option>
+          {% for model in models %}
+            <option value="{{ model }}">{{ model }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="mb-3">
         <input type="text" name="location" class="form-control" placeholder="Enter location" />
+      </div>
+      <div class="mb-3">
+        <select name="submodel" class="form-select selectpicker" data-live-search="true">
+          <option value="">Select Submodel</option>
+          {% for sub in submodels %}
+            <option value="{{ sub }}">{{ sub }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="mb-3">
         <select name="category" class="selectpicker form-select w-100"  data-live-search="true">

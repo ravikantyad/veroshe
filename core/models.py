@@ -54,7 +54,7 @@ class Ad(models.Model):
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete= models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
-    vehicle_name = models.CharField(max_length=255, default='Unknown', blank=True)
+    make = models.CharField(max_length=255, default='Unknown', blank=True)
     model = models.CharField(max_length=255, default='Unknown', blank=True )
     sub_model = models.CharField(max_length=100,blank=True, null=True)
     year = models.PositiveIntegerField(blank=True, null=True)

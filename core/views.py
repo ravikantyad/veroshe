@@ -22,14 +22,22 @@ User = get_user_model()
 
 
 def home(request):
+    makes = Ad.objects.values_list('make', flat=True).distinct()
+    models = Ad.objects.values_list('model', flat=True).distinct()
+    submodels = Ad.objects.values_list('sub_model', flat=True).distinct()
     ads = Ad.objects.all().order_by('-created_at') # assuming you want latest first
     categories = Category.objects.all()
     years = list(range(datetime.now().year, 1950, -1))
      
+    # Define makes, models, and submodels as empty lists or fetch them as needeed
+
     return render(request, 'core/home.html', {
         'categories': categories,
         'ads': ads,
         'years': years,
+        'makes': makes,
+        'models': models,
+        'submodels': submodels,
     })
 
 
