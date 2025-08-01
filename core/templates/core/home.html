@@ -14,7 +14,7 @@
 
     <form method="get" action="{% url 'search_results' %}">
       <div class="mb-3">
-        <select name="make" class="form-select selectpicker" data-live-search="true">
+        <select name="make" class="form-select selectpicker w-100" data-live-search="true">
           <option value="">Select Make</option>
           {% for make in makes %}
             <option value="{{ make }}">{{ make }}</option>
@@ -22,7 +22,7 @@
         </select>
       </div>
       <div class="mb-3">
-        <select name="model" class="form-select selectpicker" data-live-search="true">
+        <select name="model" class="form-select selectpicker w-100" data-live-search="true">
           <option value="">Select Model</option>
           {% for model in models %}
             <option value="{{ model }}">{{ model }}</option>
@@ -30,7 +30,7 @@
         </select>
       </div>
       <div class="mb-3">
-        <select name="submodel" class="form-select selectpicker" data-live-search="true">
+        <select name="submodel" class="form-select selectpicker w-100" data-live-search="true">
           <option value="">Select Submodel</option>
           {% for sub in submodels %}
             <option value="{{ sub }}">{{ sub }}</option>
