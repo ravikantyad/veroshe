@@ -274,15 +274,21 @@ def edit_profile(request):
     return render(request, 'core/edit_profile.html', {'profile': profile})
 
 def search_results(request):
-    query = request.GET.get('q')
+    make = request.GET.get('make')
+    model = request.GET.get('model')
+    submodel = request.GET.get('submodel')
     location = request.GET.get('location')
     category = request.GET.get('category')
     year = request.GET.get('year')
 
     ads = Ad.objects.all()
-
-    if query:
-        ads = ads.filter(title__icontains=query)
+    
+    if make:
+        ads = ads.filter(make__iexact=make)
+    if model:
+        ads = ads.filter(model__iexact=model)
+    if submodel:
+        ads = ads.filter(sub_model__iexact=submodel)
     if location:
         ads = ads.filter(location__icontains=location)
     if category:
