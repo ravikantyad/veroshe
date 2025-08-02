@@ -280,6 +280,7 @@ def search_results(request):
     location = request.GET.get('location')
     category = request.GET.get('category')
     year = request.GET.get('year')
+    query = request.GET.get('q')
 
     ads = Ad.objects.all()
     
@@ -288,12 +289,14 @@ def search_results(request):
     if model:
         ads = ads.filter(model__iexact=model)
     if submodel:
-        ads = ads.filter(sub_model__iexact=submodel)
+        ads = ads.filter(sub_model__icontains=submodel)
     if location:
         ads = ads.filter(location__icontains=location)
     if category:
         ads = ads.filter(category__name__iexact=category)
     if year:
         ads = ads.filter(year=year)
+    if query:
+        ads = ads.filter(title__icontains=query)
 
     return render(request, 'core/search_results.html', {'ads': ads})

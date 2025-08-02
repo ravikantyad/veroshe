@@ -2,21 +2,62 @@
 {% block content %}
 <div class="container my-5">
   <h3>Search Results</h3>
-  <div class="row">
-    {% for ad in ads %}
-      <!-- Your ad card design -->
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        <div class="card mb-4">
-          <img src="{{ ad.image.url }}" class="card-img-top" alt="{{ ad.title }}">
-          <div class="card-body">
-            <h5 class="card-title">{{ ad.title }}</h5>
-            <p class="card-text">${{ ad.price }} | {{ ad.location }}</p>
+
+  <!-- 🔍 Car Part Title Search -->
+  <form method="get" class="mb-4">
+    <div class="input-group">
+      <input type="text" name="q" class="form-control" placeholder="Search specific part (e.g. muffler, headlight)" value="{{ request.GET.q }}">
+      <button class="btn btn-outline-secondary" type="submit">Search</button>
+    </div>
+
+    <!-- Hidden fields to retain previous filters -->
+    <input type="hidden" name="make" value="{{ request.GET.make }}">
+    <input type="hidden" name="model" value="{{ request.GET.model }}">
+    <input type="hidden" name="submodel" value="{{ request.GET.submodel }}">
+    <input type="hidden" name="category" value="{{ request.GET.category }}">
+    <input type="hidden" name="year" value="{{ request.GET.year }}">
+    <input type="hidden" name="location" value="{{ request.GET.location }}">
+  </form>
+
+  <!-- 📍 Location Update Option -->
+  {% if request.GET.location %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5>Location: <span class="badge bg-primary">{{ request.GET.location }}</span></h5>
+      <form method="get" class="d-flex" style="gap: 10px;">
+        <!-- Keep all previous filters -->
+        <input type="hidden" name="make" value="{{ request.GET.make }}">
+        <input type="hidden" name="model" value="{{ request.GET.model }}">
+        <input type="hidden" name="submodel" value="{{ request.GET.submodel }}">
+        <input type="hidden" name="category" value="{{ request.GET.category }}">
+        <input type="hidden" name="year" value="{{ request.GET.year }}">
+        <input type="hidden" name="q" value="{{ request.GET.q }}">
+
+        <!-- Location update -->
+        <input type="text" name="location" placeholder="Change location..." class="form-control" required>
+        <button class="btn btn-outline-primary" type="submit">Update</button>
+      </form>
+    </div>
+  {% endif %}
+  {% if ads %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+      {% for ad in ads %}
+        <div class="col">
+          <div class="card h-100">
+            <img src="{{ ad.image.url }}" class="card-img-top" alt="{{ ad.title }}" style="height: 180px; object-fit: cover;">
+            <div class="card-body">
+              <h5 class="card-title">{{ ad.title }}</h5>
+              <p class="mb-1">{{ ad.make }} {{ ad.model }} {{ ad.year }}</p>
+              <p class="mb-1 text-primary">${{ ad.price }}</p>
+              <p class="mb-1 text-muted"><i class="bi bi-geo-alt"></i> {{ ad.location }}</p>
+              <p class="mb-1 text-muted"><i class="bi bi-clock"></i> {{ ad.created_at|timesince }} ago</p>
+              <p class="mb-0 text-muted"><i class="bi bi-person"></i> {{ ad.seller.username }}</p>
+            </div>
           </div>
         </div>
-      </div>
-    {% empty %}
-      <p>No results found.</p>
-    {% endfor %}
-  </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="mt-4">No results found.</p>
+  {% endif %}
 </div>
 {% endblock %}
