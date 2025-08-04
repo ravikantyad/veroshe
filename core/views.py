@@ -17,6 +17,7 @@ from django.template.loader import render_to_string
 from django.db.models import Q
 from datetime import datetime
 
+
 User = get_user_model()
 
 
@@ -300,3 +301,6 @@ def search_results(request):
         ads = ads.filter(title__icontains=query)
 
     return render(request, 'core/search_results.html', {'ads': ads})
+
+
+

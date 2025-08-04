@@ -16,7 +16,7 @@ urlpatterns = [
     path('upgrade-to-seller/', views.upgrade_to_seller, name= 'upgrade_to_seller'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('search/', views.search_results, name='search_results'),
-
+   
     # Password reset flow
     path('password-reset/', auth_views.PasswordResetView.as_view(
         template_name='core/password_reset.html'
