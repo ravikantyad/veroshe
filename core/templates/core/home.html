@@ -5,58 +5,65 @@
 
 {% block content %}
 <!-- Search Overlay -->
-<div id="searchOverlay" class="search-overlay">
-  <div class="container p-4 bg-light rounded shadow">
-    <div class="text-end">
-      <button class="btn-close" onclick="closeSearch()"></button>
-    </div>
+<!-- Search Overlay -->
+<div id="searchOverlay" class="position-fixed top-0 start-0 w-100 h-100 bg-white overflow-auto" style="z-index: 1050; display: none;">
+  <div class="d-flex justify-content-end p-3">
+    <button class="btn-close" onclick="closeSearch()"></button>
+  </div>
 
-    <h4 class="mb-4">Find the Right Car Part</h4>
+  <div class="container py-3 px-4 bg-light rounded shadow" style="max-width: 700px;">
+    <h4 class="mb-4 text-center">Find the Right Car Part</h4>
 
     <form method="get" action="{% url 'search_results' %}">
       <div class="mb-3">
         <select name="make" class="form-select selectpicker w-100" data-live-search="true">
           <option value="">Select Make</option>
           {% for make in makes %}
-            <option value="{{ make }}">{{ make }}</option>
+          <option value="{{ make }}">{{ make }}</option>
           {% endfor %}
         </select>
       </div>
+
       <div class="mb-3">
         <select name="model" class="form-select selectpicker w-100" data-live-search="true">
           <option value="">Select Model</option>
           {% for model in models %}
-            <option value="{{ model }}">{{ model }}</option>
+          <option value="{{ model }}">{{ model }}</option>
           {% endfor %}
         </select>
       </div>
+
       <div class="mb-3">
         <select name="submodel" class="form-select selectpicker w-100" data-live-search="true">
           <option value="">Select Submodel</option>
           {% for sub in submodels %}
-            <option value="{{ sub }}">{{ sub }}</option>
+          <option value="{{ sub }}">{{ sub }}</option>
           {% endfor %}
         </select>
       </div>
+
       <div class="mb-3">
-        <input type="text" name="location" class="form-control" placeholder="Enter location" />
+        <input type="text" name="location" class="form-control" placeholder="Enter location">
       </div>
+
       <div class="mb-3">
-        <select name="category" class="selectpicker form-select w-100"  data-live-search="true">
+        <select name="category" class="form-select selectpicker w-100" data-live-search="true">
           <option value="">Select Category</option>
           {% for cat in categories %}
           <option value="{{ cat.name }}">{{ cat.name }}</option>
           {% endfor %}
         </select>
       </div>
+
       <div class="mb-3">
-        <select class = "selectpicker form-select w-100" data-live-search="true" name="year">
+        <select name="year" class="form-select selectpicker w-100" data-live-search="true">
           <option value="">Select Year</option>
           {% for y in years %}
           <option value="{{ y }}">{{ y }}</option>
           {% endfor %}
         </select>
       </div>
+
       <div class="text-end">
         <button type="submit" class="btn btn-primary">Search</button>
       </div>

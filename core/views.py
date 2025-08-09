@@ -8,14 +8,18 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from .models import Ad, favorite, CATEGORY_CHOICES
+from .models import Ad, CATEGORY_CHOICES, Favorite, SellerActivity
 from django.contrib.auth import logout as auth_logout
-from .forms import AdForm
-from .models import Profile, Category
+from .forms import AdForm, UserForm, UserProfileForm
+from .models import UserProfile, Category
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.db.models import Q
 from datetime import datetime
+from django.db.models import Sum
+from django.utils.timezone import now, timedelta
+from django.urls import reverse
+
 
 
 User = get_user_model()
@@ -26,7 +30,7 @@ def home(request):
     makes = Ad.objects.values_list('make', flat=True).distinct()
     models = Ad.objects.values_list('model', flat=True).distinct()
     submodels = Ad.objects.values_list('sub_model', flat=True).distinct()
-    ads = Ad.objects.all().order_by('-created_at') # assuming you want latest first
+    ads = Ad.objects.filter(is_active=True, is_expired=False).order_by('-created_at') # assuming you want latest first
     categories = Category.objects.all()
     years = list(range(datetime.now().year, 1950, -1))
      
@@ -90,45 +94,39 @@ def register_view(request):
     return render(request, 'core/register.html')
 
 
+
+
+@login_required
 def seller_dashboard(request):
     user = request.user
 
+    # Real metrics
     posted_ads_count = Ad.objects.filter(seller=user).count()
-    favourite_ads_count = favorite.objects.filter(user=user).count()
+    active_ads_count = Ad.objects.filter(seller=user, is_active=True).count()
     expired_ads_count = Ad.objects.filter(seller=user, is_expired=True).count()
+    views_this_month = Ad.objects.filter(seller=user, created_at__month=now().month).aggregate(total_views=Sum('views'))['total_views'] or 0
+    inquiries_count = Favorite.objects.filter(ad__seller=user).count()  # or replace with inquiry model
+    favorite_ads_count = Favorite.objects.filter(user=request.user).count()
 
-    # Recent ads
-    seller_ads = Ad.objects.filter(seller=user).order_by('-created_at')
+    # Recent activity (example logic)
+    recent_activities = SellerActivity.objects.filter(seller=request.user).order_by('-timestamp')[:5]
 
-    recent_ads = seller_ads[:3]
+    # Recently posted ads
+    recent_ads = Ad.objects.filter(seller=user).order_by('-created_at')[:5]
 
-    # Ads view data for chart
-    ads_views_data = Ad.objects.filter(seller=user).values_list('views', flat=True)[:7]
-    ads_views = list(ads_views_data) + [0] * (7 - len(ads_views_data))
-    if not any(ads_views):
-        ads_views = [0,0,0,0,0,0,0]  # pad to 7 items
+    top_ads = Ad.objects.filter(seller=request.user).order_by('-views')[:3]
 
-    print("ads_views data:", ads_views)
-
-    # Recent activities placeholder (replace with real logs if you have them)
-    recent_activities = [
-        {'message': 'Your ad "v21 48mp ois selfie" is successfully published.', 'link': '#'},
-        {'message': 'John Wick saved your ad to his favourites.', 'link': '#'},
-        {'message': 'Please complete your profile editing to post ads.', 'link': None},
-        {'message': 'Your ad "converse blue training shoes" is published.', 'link': '#'},
-        {'message': '5 days remaining to complete membership payment.', 'link': '#'},
-    ]
-
-    context = {
+    return render(request, 'core/seller_dashboard.html', {
         'posted_ads_count': posted_ads_count,
-        'favourite_ads_count': favourite_ads_count,
+        'active_ads_count': active_ads_count,
         'expired_ads_count': expired_ads_count,
-        'recent_ads': recent_ads,
-        'ads_views': ads_views,
+        'views_this_month': views_this_month,
+        'inquiries_count': inquiries_count,
         'recent_activities': recent_activities,
-    }
-
-    return render(request, 'core/seller_dashboard.html', context)
+        'recent_ads': recent_ads,
+        'top_ads': top_ads,
+        'favorite_ads_count': favorite_ads_count,
+    })
 
 def logout_view(request):
     auth_logout(request)
@@ -228,6 +226,14 @@ def post_ad(request, category_slug):
             ad.seller = request.user
             ad.category = category_obj
             ad.save()
+            # After ad.save() in post_ad view
+            SellerActivity.objects.create(
+                seller=request.user,
+                message=f"Posted a new ad: {ad.title}",
+                link=reverse('ad_detail', kwargs={'pk': ad.pk})
+            )
+
+
             print("✅ Ad saved:", ad.id)
             messages.success(request, 'Ad posted successfully!')
             return redirect('home')
@@ -254,26 +260,7 @@ def upgrade_to_seller(request):
     user.save()
     return redirect('seller_dashboard')
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
-
 @login_required
-def edit_profile(request):
-    user = request.user
-    profile, created = Profile.objects.get_or_create(user=user)
-
-    if request.method == 'POST':
-        user.username = request.POST.get('username')
-        user.email = request.POST.get('email')
-        profile.phone_number = request.POST.get('phone')
-        user.save()
-        profile.save()
-        messages.success(request, 'Profile updated successfully!')
-        return redirect('edit_profile')
-
-    return render(request, 'core/edit_profile.html', {'profile': profile})
-
 def search_results(request):
     make = request.GET.get('make')
     model = request.GET.get('model')
@@ -302,5 +289,81 @@ def search_results(request):
 
     return render(request, 'core/search_results.html', {'ads': ads})
 
+# views.py
+
+def manage_ads(request):
+    filter_by = request.GET.get('filter', 'all')
+
+    if filter_by == 'published':
+        ads = Ad.objects.filter(is_active=True, is_expired=False)
+    elif filter_by == 'expired':
+        ads = Ad.objects.filter(is_expired=True)
+    else:  # All ads
+        ads = Ad.objects.all()
+
+    context = {
+        'ads': ads,
+        'filter_by': filter_by,
+    }
+    return render(request, 'core/manage_ads.html', context)
 
 
+@login_required
+def delete_ad(request, ad_id):
+    ad = get_object_or_404(Ad, id=ad_id, seller=request.user)
+    ad.delete()
+    return redirect('manage_ads')
+
+@login_required
+def mark_ad_active(request, ad_id):
+    ad = get_object_or_404(Ad, id=ad_id, seller=request.user)
+    ad.is_active = True
+    ad.is_expired = False
+    ad.save()
+    return redirect('manage_ads')
+
+@login_required
+def mark_ad_expired(request, ad_id):
+    ad = get_object_or_404(Ad, id=ad_id, seller=request.user)
+    ad.is_active = False
+    ad.is_expired = True
+    ad.save()
+    return redirect('manage_ads')
+
+@login_required
+def edit_ad(request, ad_id):
+    # You can replace this with your existing post_ad edit logic
+    ad = get_object_or_404(Ad, id=ad_id, seller=request.user)
+
+    if request.method == 'POST':
+        form = AdForm(request.POST, request.FILES, instance=ad)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_ads')
+    else:
+        form = AdForm(instance=ad)
+
+    return render(request, 'core/edit_ad.html', {'form': form})
+
+
+@login_required
+def profile_settings(request):
+    user = request.user
+    profile = user.userprofile
+
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=user)
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect('profile_settings')  # or show success message
+    else:
+        user_form = UserForm(instance=user)
+        profile_form = UserProfileForm(instance=profile)
+
+    return render(request, 'core/profile_settings.html', {
+        'user_form': user_form,
+        'profile_form': profile_form
+    })

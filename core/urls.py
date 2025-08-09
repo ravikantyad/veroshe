@@ -14,9 +14,14 @@ urlpatterns = [
     path('dashboard/', views.buyer_dashboard, name='buyer_dashboard'),
     path('logout/', views.logout_view, name='logout'),
     path('upgrade-to-seller/', views.upgrade_to_seller, name= 'upgrade_to_seller'),
-    path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('search/', views.search_results, name='search_results'),
-   
+    path('manage-ads/', views.manage_ads, name='manage_ads'),
+    path('ads/edit/<int:ad_id>/', views.edit_ad, name='edit_ad'),
+    path('ads/delete/<int:ad_id>/', views.delete_ad, name='delete_ad'),
+    path('ads/mark-active/<int:ad_id>/', views.mark_ad_active, name='mark_ad_active'),
+    path('ads/mark-expired/<int:ad_id>/', views.mark_ad_expired, name='mark_ad_expired'),
+    path('dashboard/profile-settings/', views.profile_settings, name='profile_settings'),
+    
     # Password reset flow
     path('password-reset/', auth_views.PasswordResetView.as_view(
         template_name='core/password_reset.html'

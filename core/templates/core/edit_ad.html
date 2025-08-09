@@ -1,0 +1,119 @@
+{% extends 'core/base.html' %}
+{% load form_tags %}
+{% load static %}
+
+{% block title %}Edit Ad{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="card shadow p-4">
+    <h3 class="mb-4 text-center text-uppercase">Edit Your Ad</h3>
+
+    <!-- Selected Category -->
+    <div class="mb-4">
+      <h6 class="text-muted">Selected Category</h6>
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="badge bg-primary px-3 py-2">{{ ad.category.name }}</span>
+        <a href="{% url 'select_category' %}" class="btn btn-outline-secondary btn-sm">Change</a>
+      </div>
+    </div>
+
+    <!-- Edit Form -->
+    <form method="post" enctype="multipart/form-data" class="mt-4">
+      {% csrf_token %}
+
+      <div class="card shadow p-4">
+        <h4 class="mb-4 text-center text-uppercase">Update Your Ad</h4>
+
+        <div class="row g-3">
+          <!-- Title -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.title.label }}</label>
+            {{ form.title|add_class:"form-control" }}
+          </div>
+
+          <!-- Vehicle Name -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.make.label }}</label>
+            {{ form.make|add_class:"form-control" }}
+          </div>
+
+          <!-- Model -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.model.label }}</label>
+            {{ form.model|add_class:"form-control" }}
+          </div>
+
+          <!-- Sub Model -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.sub_model.label }}</label>
+            {{ form.sub_model|add_class:"form-control" }}
+          </div>
+
+          <!-- Year -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.year.label }}</label>
+            {{ form.year|add_class:"form-control" }}
+          </div>
+
+          <!-- Fuel Type -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.fuel_type.label }}</label>
+            {{ form.fuel_type|add_class:"form-select" }}
+          </div>
+
+          <!-- Transmission -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.transmission.label }}</label>
+            {{ form.transmission|add_class:"form-select" }}
+          </div>
+
+          <!-- Price -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.price.label }}</label>
+            {{ form.price|add_class:"form-control" }}
+          </div>
+
+          <!-- Location -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.location.label }}</label>
+            {{ form.location|add_class:"form-control" }}
+          </div>
+
+          <!-- Mobile Number -->
+          <div class="col-md-6">
+            <label class="form-label">{{ form.mobile_number.label }}</label>
+            {{ form.mobile_number|add_class:"form-control" }}
+          </div>
+
+          <!-- Description -->
+          <div class="col-12">
+            <label class="form-label">{{ form.description.label }}</label>
+            {{ form.description|add_class:"form-control" }}
+          </div>
+
+          <!-- Image Upload -->
+          <div class="col-12">
+            <label class="form-label">{{ form.image.label }}</label>
+            {{ form.image|add_class:"form-control" }}
+            <small class="text-muted">Upload new images to replace current ones.</small>
+          </div>
+
+          <!-- Existing Images Preview (optional) -->
+          {% if ad.image %}
+          <div class="col-12">
+            <label class="form-label">Current Images:</label><br>
+            <img src="{{ ad.image.url }}" class="img-thumbnail" width="200">
+          </div>
+          {% endif %}
+
+          <!-- Submit Button -->
+          <div class="col-12 text-end mt-4">
+            <button type="submit" class="btn btn-success px-4">Update Ad</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

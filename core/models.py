@@ -26,9 +26,22 @@ CATEGORY_CHOICES = [
     ('transmission', 'Transmission'),
 ]
 
-class Profile(models.Model):
+
+class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_image = models.ImageField(upload_to='profile_images/', default='profile_images/profile-l.png', blank=True, null=True)
+
+    full_name = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(max_length=255, blank=True, null=True)
+    
+    profile_picture = models.ImageField(upload_to='profile_images/', default='profile_images/profile-l.png', null=True, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True)
+    
+    # Address Fields
+    street_name = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=50, blank=True, null=True)
+    state = models.CharField(max_length=50, blank=True, null=True)
+    pincode = models.CharField(max_length=10, blank=True, null=True)
+    country = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -78,20 +91,28 @@ class Ad(models.Model):
 
 
 
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    ad = models.ForeignKey('Ad', on_delete=models.CASCADE, related_name='favorited_by')
+    added_on = models.DateTimeField(auto_now_add=True)
 
-class favorite(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    ad = models.ForeignKey(Ad, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('user', 'ad')  # Prevent duplicate favorites
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
-
-    
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} favorited {self.ad.title}"
+    
+
+class SellerActivity(models.Model):
+    seller = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    link = models.URLField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.seller.username} - {self.message}"
+
+
     
 
 

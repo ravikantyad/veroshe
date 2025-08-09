@@ -2,13 +2,12 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth import get_user_model
 from .models import User
-from .models import Profile
+from .models import UserProfile
 from django.utils.html import format_html
 from django.utils.html import mark_safe
-from .models import Ad, CATEGORY_CHOICES, favorite
+from .models import Ad, CATEGORY_CHOICES, Favorite
 from .models import Category
 
-admin.site.register(Category)
 
 User = get_user_model()
 
@@ -18,8 +17,6 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'is_staff', 'is_active')
     search_fields = ('username', 'email')
 
-class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email' , 'user_type', 'is_staff')
     
 # Register your models here.
 
@@ -36,6 +33,6 @@ class ProfileAdmin(admin.ModelAdmin):
     
     profile_image_tag.short_description = 'Profile Picture'
 
-admin.site.register(Profile, ProfileAdmin)
+admin.site.register(Category)
 admin.site.register(Ad)
-admin.site.register(favorite)
+admin.site.register(Favorite)
