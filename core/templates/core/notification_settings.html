@@ -1,0 +1,190 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+/* Toggle Switch Style */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 26px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #0d6efd; /* Bootstrap primary */
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2 bg-light vh-100 p-4">
+      <h5 class="mb-4">Main Menu</h5>
+      <ul class="nav flex-column">
+        <li class="nav-item"><a href="{% url 'seller_dashboard' %}" class="nav-link">Dashboard</a></li>
+        <li class="nav-item"><a href="{% url 'manage_ads' %}" class="nav-link">Manage Listings</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Add New Listing</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">My Chats</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Analytics</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Subscription & Billing</a></li>
+        <li class="nav-item"><a href="{% url 'profile_settings' %}" class="nav-link">Profile Settings</a></li>
+        <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link text-danger">Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-md-9 col-lg-10 p-4">
+      <div class="container mx-auto p-4">
+        <div class="d-flex justify-between align-items-center">
+          <h2 class="text-2xl font-bold mb-3">Profile Settings</h2>
+        </div>
+
+  <!-- Nav Tabs -->
+        {% include 'core/tabs.html'  %}
+
+        <form method="POST">
+        <h5 class="mb-3 font-semibold">Notifications Preferences</h5>
+        {% csrf_token %}
+
+        <!-- Email Notifications -->
+            <hr>
+            <h5 class="mb-3 font-semibold">Email Notifications</h5>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <strong>New inquiries</strong><br>
+                <small class="text-muted">Get notified when buyers message you</small>
+              </div>
+              <label class="switch">
+                {{ form.new_inquiries }}
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <strong>Listing performance</strong><br>
+                <small class="text-muted">Weekly reports on your listing views and engagement</small>
+              </div>
+              <label class="switch">
+                {{ form.listing_performance }}
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <strong>Payment confirmations</strong><br>
+                <small class="text-muted">Billing and subscription updates</small>
+              </div>
+              <label class="switch">
+                {{ form.payment_confirmations }}
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <strong>Marketing updates</strong><br>
+                <small class="text-muted">Product news and promotional offers</small>
+              </div>
+              <label class="switch">
+                {{ form.marketing_updates }}
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <!-- SMS Notifications -->
+            <hr>
+            <h5 class="mb-3 font-semibold">SMS Notifications</h5>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <strong>Urgent inquiries</strong><br>
+                <small class="text-muted">High-priority messages from interested buyers</small>
+              </div>
+              <label class="switch">
+                {{ form.urgent_inquiries }}
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <strong>Security alerts</strong><br>
+                <small class="text-muted">Login alerts and suspicious activity notifications</small>
+              </div>
+              <label class="switch">
+                {{ form.security_alerts }}
+                <span class="slider"></span>
+              </label>
+            </div>
+
+    <!-- Push Notifications -->
+            <hr>
+            <h5 class="mb-3 font-semibold">Push Notifications</h5>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <strong>Real-time chat messages</strong><br>
+                <small class="text-muted">Instant notifications for new chat messages</small>
+              </div>
+              <label class="switch">
+                {{ form.real_time_chat }}
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <strong>Call requests</strong><br>
+                <small class="text-muted">When buyers request to call you</small>
+              </div>
+              <label class="switch">
+                {{ form.call_requests }}
+                <span class="slider"></span>
+              </label>
+            </div>
+
+    <!-- Save Button -->
+            <div class="text-end mt-4">
+              <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

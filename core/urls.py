@@ -21,7 +21,18 @@ urlpatterns = [
     path('ads/mark-active/<int:ad_id>/', views.mark_ad_active, name='mark_ad_active'),
     path('ads/mark-expired/<int:ad_id>/', views.mark_ad_expired, name='mark_ad_expired'),
     path('dashboard/profile-settings/', views.profile_settings, name='profile_settings'),
-    
+    path('business-settings/', views.business_settings, name='business_settings'),
+    path('security-settings/', views.security_settings, name='security_settings'),
+    path("search/ajax/", views.search_results, name="search_results_ajax"),
+    path("get-models/", views.get_models, name="get_models"),
+    path("get-submodels/", views.get_submodels, name="get_submodels"),
+    path('ad/<int:ad_id>/', views.ad_detail, name='ad_detail'),
+    path('notification-settings/', views.notification_settings, name='notification_settings'),
+    path('toggle-2fa/', views.toggle_2fa, name='toggle_2fa'),  # New path for 2FA toggle
+    path('verification-settings/', views.verification_settings, name='verification_settings'),  # New path for verification settings
+    path('send-phone-otp/', views.send_phone_otp, name='send_phone_otp'),
+    path('verify-phone-otp/', views.verify_phone_otp, name='verify_phone_otp'),
+
     # Password reset flow
     path('password-reset/', auth_views.PasswordResetView.as_view(
         template_name='core/password_reset.html'

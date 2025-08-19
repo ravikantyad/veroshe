@@ -1,0 +1,188 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2 bg-light vh-100 p-4">
+      <h5 class="mb-4">Main Menu</h5>
+      <ul class="nav flex-column">
+        <li class="nav-item"><a href="{% url 'seller_dashboard' %}" class="nav-link">Dashboard</a></li>
+        <li class="nav-item"><a href="{% url 'manage_ads' %}" class="nav-link">Manage Listings</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Add New Listing</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">My Chats</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Analytics</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Subscription & Billing</a></li>
+        <li class="nav-item"><a href="{% url 'profile_settings' %}" class="nav-link">Profile Settings</a></li>
+        <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link text-danger">Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-md-9 col-lg-10 p-4">
+      <div class="container mx-auto p-4">
+        <div class="d-flex justify-between align-items-center">
+          <h2 class="text-2xl font-bold mb-3">Profile Settings</h2>
+        </div>
+
+        {% include 'core/tabs.html' %}
+
+  
+    <form method="POST" enctype="multipart/form-data">
+    <h5 class="mb-3 font-semibold">Account Verification</h5>
+      {% csrf_token %}
+
+      <!-- Email -->
+      <div class="d-flex align-items-center justify-content-between border-bottom py-3">
+        <div>
+          <div class="fw-bold">Email Address</div>
+          <div class="text-muted small">{{ user.email }}</div>
+        </div>
+        <span class="badge bg-success">Verified</span>
+      </div>
+
+      <!-- Phone -->
+      <div class="d-flex align-items-center justify-content-between border-bottom py-3">
+        <div>
+          <div class="fw-bold">Phone Number</div>
+
+          {% if profile.phone_number %}
+            <div class="text-muted small">
+              {{ profile.phone_number }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="text-end">
+          {% if profile.phone_verified %}
+            <span class="badge bg-success">Verified</span>
+          {% else %}
+            <div class="input-group mb-2" style="max-width: 250px;">
+              <input type="text" id="phone-input" class="form-control" placeholder="Enter phone"
+                     value="{{ profile.phone_number|default:'' }}">
+              <button type="button" id="send-otp-btn" class="btn btn-outline-primary">Send OTP</button>
+            </div>
+
+            <div id="otp-section" class="mt-2 d-none">
+              <input type="text" id="otp-input" class="form-control mb-2" placeholder="Enter 6-digit OTP" style="max-width: 200px;">
+              <button type="button" id="verify-otp-btn" class="btn btn-success btn-sm">Verify</button>
+            </div>
+
+            <div id="phone-status" class="mt-2 small"></div>
+          {% endif %}
+        </div>
+      </div>
+
+
+      <!-- Government ID -->
+      <div class="d-flex align-items-center justify-content-between border-bottom py-3">
+        <div>
+          <div class="fw-bold">Government ID</div>
+          <div class="text-muted small">Upload Aadhaar or PAN</div>
+        </div>
+
+        <div class="text-end">
+          {% if profile.govt_id %}
+            <a href="{{ profile.govt_id.url }}" target="_blank" class="btn btn-outline-secondary btn-sm mb-1 md3">View ID</a>
+            {% if profile.govt_id_verified %}
+              <span class="badge bg-success">Verified</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">Pending</span>
+            {% endif %}
+          {% else %}
+            <!-- Custom styled upload button -->
+            <label class="btn btn-outline-primary bg-light text-muted mb-0">
+              Upload ID
+              {{ form.govt_id }}
+            </label>
+            <div id="govt-id-filename" class="text-primary small mt-1"></div>
+            <div id="govt-id-status" class="badge bg-warning text-dark mt-2 d-none">Pending Verification</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Business License -->
+      <div class="d-flex align-items-center justify-content-between py-3">
+        <div>
+          <div class="fw-bold">Business License</div>
+          <div class="text-muted small">Upload GST or Trade License</div>
+        </div>
+        <div class="text-end">
+          {% if profile.business_licence %}
+            <a href="{{ profile.business_licence.url }}" target="_blank" class="btn btn-outline-secondary btn-sm mb-1 md3">View License</a>
+            {% if profile.business_licence_verified %}
+              <span class="badge bg-success">Verified</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">Pending</span>
+            {% endif %}
+          {% else %}
+            <!-- Custom styled upload button -->
+            <label class="btn btn-outline-primary bg-light text-muted mb-0">
+              Upload License
+              {{ form.business_licence }}
+            </label>
+            <div id="business-licence-filename" class="text-primary small mt-1"></div>
+            <div id="business-licence-status" class="badge bg-warning text-dark mt-2 d-none">Pending Verification</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Save button -->
+      <div class="mt-4 text-end">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById("send-otp-btn")?.addEventListener("click", function() {
+  let phone = document.getElementById("phone-input").value;
+  fetch("{% url 'send_phone_otp' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "phone_number=" + phone
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById("otp-section").classList.remove("d-none");
+      document.getElementById("phone-status").innerHTML =
+        "<span class='text-success'>OTP sent to your phone.</span>";
+    } else {
+      document.getElementById("phone-status").innerHTML =
+        "<span class='text-danger'>" + data.error + "</span>";
+    }
+  });
+});
+
+document.getElementById("verify-otp-btn")?.addEventListener("click", function() {
+  let otp = document.getElementById("otp-input").value;
+  fetch("{% url 'verify_phone_otp' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "otp=" + otp
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      document.getElementById("phone-status").innerHTML =
+        "<span class='text-success'>" + data.message + "</span>";
+      document.getElementById("otp-section").classList.add("d-none");
+      setTimeout(() => location.reload(), 1200); // reload to update badge
+    } else {
+      document.getElementById("phone-status").innerHTML =
+        "<span class='text-danger'>" + data.error + "</span>";
+    }
+  });
+});
+</script>
+{% endblock %}

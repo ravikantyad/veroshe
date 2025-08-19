@@ -15,7 +15,7 @@
         <li class="nav-item"><a href="#" class="nav-link">My Chats</a></li>
         <li class="nav-item"><a href="#" class="nav-link">Analytics</a></li>
         <li class="nav-item"><a href="#" class="nav-link">Subscription & Billing</a></li>
-        <li class="nav-item"><a href="#" class="nav-link">Profile Settings</a></li>
+        <li class="nav-item"><a href="{% url 'profile_settings' %}" class="nav-link">Profile Settings</a></li>
         <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link text-danger">Logout</a></li>
       </ul>
     </div>
@@ -25,7 +25,7 @@
       <div class="container mx-auto p-4">
         <div class="d-flex justify-between align-items-center">
         <!-- Heading -->
-          <h2 class="text-2xl font-semibold mb-4">Manage Listings</h2>
+          <h2 class="text-2xl font-bold mb-4">Manage Listings</h2>
           <form method="get" action="" class="flex items-center mb-4 space-x-2">
             <input type="text" name="search" placeholder="Search ads" class="border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring focus:border-blue-300" value="{{ request.GET.search }}">
             <button type="submit" class="border border-gray-300 text-sm px-3 py-1 rounded-md hover:bg-gray-100">Search</button>

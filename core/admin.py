@@ -27,8 +27,8 @@ class ProfileAdmin(admin.ModelAdmin):
     readonly_fields = ['profile_image_tag']
 
     def profile_image_tag(self, obj):
-        if obj.profile_image:
-            return mark_safe('<img src="{obj.profile_image.url}" width="40" height="40" style="border-radius:50%;" />')
+        if obj.profile_picture:
+            return mark_safe(f'<img src="{obj.profile_picture.url}" width="40" height="40" style="border-radius:50%;" />')
         return "No image"
     
     profile_image_tag.short_description = 'Profile Picture'
@@ -36,3 +36,4 @@ class ProfileAdmin(admin.ModelAdmin):
 admin.site.register(Category)
 admin.site.register(Ad)
 admin.site.register(Favorite)
+admin.site.register(UserProfile, ProfileAdmin)

@@ -1,0 +1,63 @@
+<style>
+.nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+  background: linear-gradient(to right, #f8f9fa, #e9ecef);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.nav-tabs .nav-item {
+  margin-bottom: -1px;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  border-radius: 0;
+  color: #495057;
+  font-weight: 500;
+  padding: 12px 20px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-tabs .nav-link:hover {
+  background-color: #e2e6ea;
+  color: #007bff;
+}
+
+.nav-tabs .nav-link.active {
+  color: #007bff;
+  background-color: #ffffff;
+  border-bottom: 3px solid #007bff;
+  font-weight: 600;
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #007bff;
+  border-radius: 2px;
+}
+</style>
+
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'personal' %}active{% endif %}" href="{% url 'profile_settings' %}">Personal</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'business' %}active{% endif %}" href="{% url 'business_settings' %}">Business</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'security' %}active{% endif %}" href="{% url 'security_settings' %}">Security</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'notification_settings' %}">Notifications</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'verification_settings' %}">Verification</a>
+    </li>
+</ul>

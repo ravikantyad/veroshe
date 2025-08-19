@@ -7,7 +7,7 @@
 {% block content %}
 <div class="container my-5">
   <div class="card shadow p-4">
-    <h3 class="mb-4 text-center text-uppercase">Edit Your Ad</h3>
+    <h3 class="mb-4 text-center text-uppercase">Update Your Ad</h3>
 
     <!-- Selected Category -->
     <div class="mb-4">
@@ -21,9 +21,6 @@
     <!-- Edit Form -->
     <form method="post" enctype="multipart/form-data" class="mt-4">
       {% csrf_token %}
-
-      <div class="card shadow p-4">
-        <h4 class="mb-4 text-center text-uppercase">Update Your Ad</h4>
 
         <div class="row g-3">
           <!-- Title -->

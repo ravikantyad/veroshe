@@ -4,14 +4,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .models import Ad, CATEGORY_CHOICES, Favorite, SellerActivity
 from django.contrib.auth import logout as auth_logout
-from .forms import AdForm, UserForm, UserProfileForm
-from .models import UserProfile, Category
+from .forms import AdForm, UserForm, UserProfileForm, BusinessProfileForm, CustomPasswordChangeForm, NotificationPreferenceForm, VerificationForm
+from .models import UserProfile, Category, BusinessProfile, SecurityActivity, NotificationPreference
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.db.models import Q
@@ -19,6 +19,12 @@ from datetime import datetime
 from django.db.models import Sum
 from django.utils.timezone import now, timedelta
 from django.urls import reverse
+from django.contrib.auth.hashers import check_password
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.decorators.http import require_POST
+import random
+
+
 
 
 
@@ -33,12 +39,29 @@ def home(request):
     ads = Ad.objects.filter(is_active=True, is_expired=False).order_by('-created_at') # assuming you want latest first
     categories = Category.objects.all()
     years = list(range(datetime.now().year, 1950, -1))
-     
+    paginator = Paginator(ads, 8)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        ads_data = []
+        for ad in page_obj:
+            ads_data.append({
+                'title': ad.title,
+                'make': ad.make,
+                'model': ad.model,
+                'year': ad.year,
+                'price': ad.price,
+                'location': ad.location,
+                'image': ad.image.url if ad.image else None,
+            })
+        return JsonResponse({'ads': ads_data, 'has_next': page_obj.has_next()})
+
     # Define makes, models, and submodels as empty lists or fetch them as needeed
 
-    return render(request, 'core/home.html', {
+    return render(request, 'core/home.html', { 'page_obj': page_obj,  # Show only first 10 ads initially
+        "show_search": True,
         'categories': categories,
-        'ads': ads,
         'years': years,
         'makes': makes,
         'models': models,
@@ -230,7 +253,7 @@ def post_ad(request, category_slug):
             SellerActivity.objects.create(
                 seller=request.user,
                 message=f"Posted a new ad: {ad.title}",
-                link=reverse('ad_detail', kwargs={'pk': ad.pk})
+                link=reverse('ad_detail', kwargs={'ad_id': ad.id})
             )
 
 
@@ -248,7 +271,9 @@ def post_ad(request, category_slug):
         'fuel_choices': FUEL_CHOICES,
     })
 
-
+def ad_detail(request, ad_id):
+    ad = get_object_or_404(Ad, id=ad_id)
+    return render(request, 'core/ad_detail.html', {'ad': ad})
 
 def buyer_dashboard(request):
     return render(request, 'core/buyer_dashboard.html')
@@ -262,34 +287,56 @@ def upgrade_to_seller(request):
 
 @login_required
 def search_results(request):
-    make = request.GET.get('make')
-    model = request.GET.get('model')
-    submodel = request.GET.get('submodel')
-    location = request.GET.get('location')
-    category = request.GET.get('category')
-    year = request.GET.get('year')
-    query = request.GET.get('q')
+    q = request.GET.get("q", "")
+    year = request.GET.get("year")
+    make = request.GET.get("make")
+    model = request.GET.get("model")
+    sub_model = request.GET.get("sub_model")
+    category_id = request.GET.get("category")
 
     ads = Ad.objects.all()
-    
-    if make:
-        ads = ads.filter(make__iexact=make)
-    if model:
-        ads = ads.filter(model__iexact=model)
-    if submodel:
-        ads = ads.filter(sub_model__icontains=submodel)
-    if location:
-        ads = ads.filter(location__icontains=location)
-    if category:
-        ads = ads.filter(category__name__iexact=category)
+
+    if q:
+        ads = ads.filter(title__icontains=q)
     if year:
         ads = ads.filter(year=year)
-    if query:
-        ads = ads.filter(title__icontains=query)
+    if make:
+        ads = ads.filter(make=make)
+    if model:
+        ads = ads.filter(model=model)
+    if sub_model:
+        ads = ads.filter(sub_model=sub_model)
+    if category_id:
+        ads = ads.filter(category_id=category_id)
 
-    return render(request, 'core/search_results.html', {'ads': ads})
+    years = Ad.objects.values_list("year", flat=True).exclude(year__isnull=True).distinct()
+    makes = Ad.objects.values_list("make", flat=True).distinct()
+    models = Ad.objects.filter(make=make).values_list("model", flat=True).distinct() if make else []
+    sub_models = Ad.objects.filter(model=model).values_list("sub_model", flat=True).distinct() if model else []
 
-# views.py
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return render(request, "core/search_results_list.html", {"ads": ads})
+
+    return render(request, "core/search_results.html", {
+        "ads": ads,
+        "query": q,
+        "years": sorted(years, reverse=True),
+        "makes": sorted(makes),
+        "models": sorted(models),
+        "sub_models": sorted(sub_models),
+        "category": category_id
+    })
+
+def get_models(request):
+    make = request.GET.get("make", "")
+    models = Ad.objects.filter(make=make).values_list("model", flat=True).distinct()
+    return JsonResponse({"models": list(models)})
+
+def get_submodels(request):
+    model = request.GET.get("model", "")
+    sub_models = Ad.objects.filter(model=model).values_list("sub_model", flat=True).distinct()
+    return JsonResponse({"sub_models": list(sub_models)})
+
 
 def manage_ads(request):
     filter_by = request.GET.get('filter', 'all')
@@ -365,5 +412,159 @@ def profile_settings(request):
 
     return render(request, 'core/profile_settings.html', {
         'user_form': user_form,
-        'profile_form': profile_form
+        'profile_form': profile_form,
     })
+
+
+@login_required
+def business_settings(request):
+    try:
+        business_profile = request.user.businessprofile
+    except BusinessProfile.DoesNotExist:
+        business_profile = BusinessProfile(user=request.user)
+
+    if request.method == 'POST':
+        form = BusinessProfileForm(request.POST, request.FILES, instance=business_profile)
+        if form.is_valid():
+            form.save()
+            return redirect('business_settings')
+    else:
+        form = BusinessProfileForm(instance=business_profile)
+
+    return render(request, 'core/business_settings.html', {'form': form, })
+
+
+
+@login_required
+def security_settings(request):
+    if request.method == "POST":
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            # ✅ Change password
+            user = form.save()
+            update_session_auth_hash(request, user)  # keep user logged in
+            SecurityActivity.objects.create(user=request.user, action='password_change')
+            messages.success(request, "Password updated successfully.")
+
+
+            return redirect('security_settings')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = CustomPasswordChangeForm(request.user)
+
+    # ✅ Show last 10 activities
+    recent_activities = SecurityActivity.objects.filter(user=request.user).order_by("-timestamp")[:5]
+
+    two_factor_enabled = False
+    if hasattr(request.user, "userprofile"):
+        two_factor_enabled = request.user.userprofile.two_factor_enabled
+
+    return render(request, "core/security_settings.html", {
+        "form": form,
+        "recent_activities": recent_activities,
+        "two_factor_enabled": two_factor_enabled,
+    })
+
+
+@login_required
+@require_POST
+def toggle_2fa(request):
+    """Enable/Disable Two-Factor Authentication via AJAX"""
+    enable_2fa = request.POST.get("enable_2fa") in ["true", "True", "1", "on"]
+
+    if hasattr(request.user, "userprofile"):
+        request.user.userprofile.two_factor_enabled = enable_2fa
+        request.user.userprofile.save()
+
+        # Log activity
+        SecurityActivity.objects.create(
+            user=request.user,
+            action="2fa_enabled" if enable_2fa else "2fa_disabled"
+        )
+
+        return JsonResponse({
+            "success": True,
+            "two_factor_enabled": enable_2fa
+        })
+
+    return JsonResponse({"success": True, "two_factor_enabled": enable_2fa})
+
+@login_required
+def notification_settings(request):
+    prefs, created = NotificationPreference.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = NotificationPreferenceForm(request.POST, instance=prefs)
+        if form.is_valid():
+            form.save()
+            return redirect("notification_settings")  # reload page after save
+    else:
+        form = NotificationPreferenceForm(instance=prefs)
+
+    return render(request, "core/notification_settings.html", {"form": form})
+
+
+@login_required
+def verification_settings(request):
+    profile = request.user.userprofile
+
+    if request.method == "POST":
+        form = VerificationForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Verification documents uploaded successfully.")
+            return redirect("verification_settings")
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = VerificationForm(instance=profile)
+
+    return render(request, "core/verification_settings.html", {
+        "form": form,
+        "profile": profile,
+    })
+
+
+@login_required
+def send_phone_otp(request):
+    phone = request.POST.get("phone_number")
+    if not phone:
+        return JsonResponse({"success": False, "error": "Phone number required"})
+
+    # ✅ Generate 6-digit OTP
+    otp = random.randint(100000, 999999)
+
+    # Save OTP temporarily in session
+    request.session["phone_otp"] = otp
+    request.session["phone_number_pending"] = phone
+
+    # TODO: Integrate with Twilio / SMS gateway to send OTP
+    print(f"DEBUG: OTP for {phone} is {otp}")  # 👈 for testing
+
+    return JsonResponse({"success": True, "message": "OTP sent successfully"})
+
+
+@login_required
+def verify_phone_otp(request):
+    entered_otp = request.POST.get("otp")
+    session_otp = str(request.session.get("phone_otp"))
+    pending_phone = request.session.get("phone_number_pending")
+
+    if not session_otp or not pending_phone:
+        return JsonResponse({"success": False, "error": "No OTP session found"})
+
+    if entered_otp == session_otp:
+        # ✅ Mark phone as verified
+        profile = request.user.userprofile
+        profile.phone_number = pending_phone
+        profile.phone_verified = True
+        profile.save()
+
+        # Clear session
+        del request.session["phone_otp"]
+        del request.session["phone_number_pending"]
+
+        return JsonResponse({"success": True, "message": "Phone number verified!"})
+
+    return JsonResponse({"success": False, "error": "Invalid OTP"})

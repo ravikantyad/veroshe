@@ -1,0 +1,29 @@
+{% load static %}
+{% if ads %}
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for ad in ads %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <!-- Ad Image -->
+          {% if ad.image %}
+            <img src="{{ ad.image.url }}" class="card-img-top" alt="{{ ad.title }}" style="height: 180px; object-fit: cover;">
+          {% else %}
+            <img src="{% static 'images/no-image.png' %}" class="card-img-top" alt="No Image" style="height: 180px; object-fit: cover;">
+          {% endif %}
+
+          <!-- Card Body -->
+          <div class="card-body">
+            <h5 class="card-title">{{ ad.title }}</h5>
+            <p class="mb-1">{{ ad.make }} {{ ad.model }} {{ ad.year }}</p>
+            <p class="mb-1 text-primary">${{ ad.price }}</p>
+            <p class="mb-1 text-muted">
+              <i class="bi bi-geo-alt"></i> {{ ad.location }}
+            </p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="mt-4">No results found.</p>
+{% endif %}

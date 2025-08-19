@@ -1,0 +1,169 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2 bg-light vh-100 p-4">
+      <h5 class="mb-4">Main Menu</h5>
+      <ul class="nav flex-column">
+        <li class="nav-item"><a href="{% url 'seller_dashboard' %}" class="nav-link">Dashboard</a></li>
+        <li class="nav-item"><a href="{% url 'manage_ads' %}" class="nav-link">Manage Listings</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Add New Listing</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">My Chats</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Analytics</a></li>
+        <li class="nav-item"><a href="#" class="nav-link">Subscription & Billing</a></li>
+        <li class="nav-item"><a href="{% url 'profile_settings' %}" class="nav-link">Profile Settings</a></li>
+        <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link text-danger">Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-md-9 col-lg-10 p-4">
+      <div class="container mx-auto p-4">
+        <div class="d-flex justify-between align-items-center">
+          <h2 class="text-2xl font-bold mb-3">Profile Settings</h2>
+        </div>
+
+        {% include 'core/tabs.html' %}  {# This contains the tab menu above #}
+
+        <!-- Change Password Form -->
+        <form method="POST" class="mb-4">
+            <h5 class="mb-3 font-semibold">Update Password</h5>
+            {% csrf_token %}
+        
+
+            <!-- Show non-field errors (like old password wrong) -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                {{ form.old_password.label_tag }}
+                {{ form.old_password }}
+                {% for error in form.old_password.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.new_password1.label_tag }}
+                {{ form.new_password1 }}
+                {% for error in form.new_password1.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.new_password2.label_tag }}
+                {{ form.new_password2 }}
+                {% for error in form.new_password2.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Password</button>
+        </form>
+
+    <!-- 2FA Toggle -->
+        <div class="d-flex justify-content-between align-items-center mb-3 p-2 ">
+            <div>
+                <strong>Enable Two-Factor Authentication</strong><br>
+                <small class="text-muted">Add an extra layer of security to your account</small>
+            </div>
+            <div class="form-check form-switch m-0">
+                <input type="checkbox" 
+                       class="form-check-input" 
+                       id="twoFactorToggle" 
+                       name="enable_2fa"
+                       {% if two_factor_enabled %}checked{% endif %}>
+                       <span class ="slider round"></span>
+            </div>
+        </div>
+
+    <!-- Recent Activity -->
+        <hr>
+        <h5 class="mb-3 font-semibold">Recent Activity</h5>
+        <ul id="activity-log" class="list-group ">
+            {% for activity in recent_activities %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        {{ activity.get_action_display }} 
+                        <small class="text-muted">({{ activity.timestamp|date:"Y-m-d H:i" }})</small>
+                    </span>
+                    <span class="text-muted small">
+                        IP: {{ activity.ip_address|default:"N/A" }}
+                    </span>
+                </li>
+            {% empty %}
+                <li class="list-group-item">No recent activity found.</li>
+            {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const toggle = document.getElementById('twoFactorToggle');
+  if (!toggle) return;
+
+  // Read Django CSRF cookie safely
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+
+  toggle.addEventListener('change', function () {
+    const enabled = this.checked;
+
+    fetch("{% url 'toggle_2fa' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCookie("csrftoken")
+      },
+      body: new URLSearchParams({ enable_2fa: String(enabled) }).toString()
+    })
+    .then(res => {
+      if (res.status === 403) throw new Error("CSRF failed (403)");
+      return res.json();
+    })
+    .then(data => {
+      if (!data.success) throw new Error(data.error || "Update failed");
+
+      // Normalize UI to server truth
+      toggle.checked = !!data.two_factor_enabled;
+
+      // Live-insert recent activity row
+      const list = document.getElementById("activity-log");
+      if (list) {
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `
+          <span>
+            Two-Factor Authentication ${toggle.checked ? "Enabled" : "Disabled"}
+            <small class="text-muted">(just now)</small>
+          </span>
+          <span class="text-muted small">IP: {{ request.META.REMOTE_ADDR|default:"N/A" }}</span>
+        `;
+        list.prepend(li);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      // Revert UI on failure
+      toggle.checked = !enabled;
+      alert("Could not update 2FA. Please try again.");
+    });
+  });
+})();
+</script>
+{% endblock %}
